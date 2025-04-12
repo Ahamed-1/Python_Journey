@@ -2,7 +2,7 @@ import sqlite3
 from werkzeug.security import generate_password_hash
 
 # Create database and table
-conn = sqlite3.connect('./IBM Project/users.db')
+conn = sqlite3.connect('./UAEP-IBM Project/users.db')
 c = conn.cursor()
 
 # Create users table
