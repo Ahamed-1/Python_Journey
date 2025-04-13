@@ -72,7 +72,7 @@ def main_app():
         univ_img = Image.open('images/univ.png')
         st.image(univ_img, 
                 caption='Global Education Opportunities',
-                use_column_width=True)
+                use_container_width=True)
     except FileNotFoundError:
         st.warning("University image not found")
 
