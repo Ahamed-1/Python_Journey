@@ -1,9 +1,8 @@
 import pickle
 import sqlite3
 import streamlit as st
-from werkzeug.security import check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from PIL import Image
@@ -23,6 +22,35 @@ def authenticate(username, password):
         return True, user['name']
     return False, None
 
+# Signup form for new users
+def signup_form():
+    st.subheader("Sign Up")
+    with st.form("Signup"):
+        name = st.text_input("Full Name")
+        username = st.text_input("Username")
+        password = st.text_input("Password", type="password")
+        confirm_password = st.text_input("Confirm Password", type="password")
+        submitted = st.form_submit_button("Sign Up")
+        
+        if submitted:
+            if password != confirm_password:
+                st.error("Passwords do not match!")
+                return
+            
+            hashed_password = generate_password_hash(password)
+            conn = get_db_connection()
+            try:
+                conn.execute(
+                    'INSERT INTO users (name, username, password) VALUES (?, ?, ?)',
+                    (name, username, hashed_password)
+                )
+                conn.commit()
+                st.success("Account created successfully! Please log in.")
+            except sqlite3.IntegrityError:
+                st.error("Username already exists. Please choose a different username.")
+            finally:
+                conn.close()
+
 def login_form():
     with st.form("Login"):
         username = st.text_input("Username")
@@ -41,7 +69,7 @@ def login_form():
 # Load dataset
 def load_data():
     try:
-        df = pd.read_csv('Dataset/Adp.csv')
+        df = pd.read_csv('Dataset/Admission_Predict.csv')
         df.rename(columns=lambda x: x.strip(), inplace=True)  # Clean column names
         return df
     except Exception as e:
@@ -192,4 +220,9 @@ if st.session_state['authenticated']:
         st.session_state['authenticated'] = False
         st.rerun()
 else:
-    login_form()
+    st.sidebar.title("Authentication")
+    auth_option = st.sidebar.radio("Choose an option", ["Login", "Sign Up"])
+    if auth_option == "Login":
+        login_form()
+    elif auth_option == "Sign Up":
+        signup_form()
